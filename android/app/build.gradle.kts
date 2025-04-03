@@ -7,8 +7,15 @@ plugins {
 
 android {
     namespace = "com.example.webview_app"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 35 // Utilisation de la version de SDK compilé spécifique
+
+    defaultConfig {
+        applicationId = "com.example.webview_app"
+        minSdk = 21  // Version minimale du SDK
+        targetSdk = 33  // Version cible du SDK
+        versionCode = 1
+        versionName = "1.0"
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -19,26 +26,13 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
-    defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.webview_app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
-    }
-
     buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("debug") // Configuration de signature
         }
     }
 }
 
 flutter {
-    source = "../.."
+    source = "../.."  // Source du projet Flutter
 }

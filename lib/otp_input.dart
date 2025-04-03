@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'transitionpage.dart';  // Assure-toi que TransitionPage est correctement importé
+import 'package:shared_preferences/shared_preferences.dart';
+import 'webview_page.dart';  // Importez la page WebView
 
 class OtpInput extends StatefulWidget {
-  final String otp; // OTP généré à partir de la page précédente
+  final String otp;
   OtpInput({required this.otp});
 
   @override
@@ -11,16 +12,14 @@ class OtpInput extends StatefulWidget {
 
 class _OtpInputState extends State<OtpInput> {
   final List<TextEditingController> _controllers = List.generate(4, (index) => TextEditingController());
-  bool _isOtpValid = false; // Indicateur de validation de l'OTP
+  bool _isOtpValid = false;
 
-  // Vérifier si l'OTP entré est correct
-  void _validateOtp() {
+  void _validateOtp() async {
     String enteredOtp = _controllers.map((controller) => controller.text).join();
     setState(() {
       _isOtpValid = enteredOtp == widget.otp;
     });
 
-    // Si l'OTP est valide, afficher un message de succès et naviguer vers la page TransitionPage
     if (_isOtpValid) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -28,11 +27,11 @@ class _OtpInputState extends State<OtpInput> {
           backgroundColor: Colors.green,
         ),
       );
+      await _saveAuthentication();
 
-      // Naviguer vers la page TransitionPage
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => TransitionPage()),  // Redirection vers la page de transition
+        MaterialPageRoute(builder: (context) => WebViewPage()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -44,18 +43,15 @@ class _OtpInputState extends State<OtpInput> {
     }
   }
 
-  @override
-  void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    super.dispose();
+  Future<void> _saveAuthentication() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool("isAuthenticated", true);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 243, 243, 226),
+      backgroundColor: const Color.fromARGB(255, 212, 212, 205),
       appBar: AppBar(
         title: const Text("Vérification OTP"),
         backgroundColor: const Color.fromARGB(255, 25, 10, 110),
@@ -69,18 +65,14 @@ class _OtpInputState extends State<OtpInput> {
               const Text(
                 "Entrez le code envoyé",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 22, 20, 119)),
-              textAlign: TextAlign.center),
+              ),
               const SizedBox(height: 20),
-              
-              // Affichage du message avec l'OTP généré
               Text(
                 "Votre code est : ${widget.otp}",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 22, 20, 119)),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 22, 20, 119)),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
-
-              // Champ OTP avec 4 entrées pour chaque chiffre
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(4, (index) {
@@ -110,10 +102,10 @@ class _OtpInputState extends State<OtpInput> {
                         ),
                         onChanged: (value) {
                           if (value.isNotEmpty && index < 3) {
-                            FocusScope.of(context).nextFocus(); // Passer à la prochaine case
+                            FocusScope.of(context).nextFocus();
                           }
                           if (value.isEmpty && index > 0) {
-                            FocusScope.of(context).previousFocus(); // Revenir à la case précédente si effacé
+                            FocusScope.of(context).previousFocus();
                           }
                         },
                       ),
@@ -121,10 +113,7 @@ class _OtpInputState extends State<OtpInput> {
                   );
                 }),
               ),
-
               const SizedBox(height: 20),
-
-              // Bouton de validation
               ElevatedButton(
                 onPressed: _validateOtp,
                 style: ElevatedButton.styleFrom(
@@ -139,20 +128,6 @@ class _OtpInputState extends State<OtpInput> {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
-
-              const SizedBox(height: 20),
-
-              // Affichage de l'état de l'OTP
-              if (_isOtpValid)
-                const Text(
-                  "OTP valide, bienvenue !",
-                  style: TextStyle(fontSize: 18, color: Colors.green),
-                )
-              else
-                const Text(
-                  ".",
-                  style: TextStyle(fontSize: 18, color: Colors.red),
-                ),
             ],
           ),
         ),
