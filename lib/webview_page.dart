@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'authentification.dart'; // Importer la page d'authentification
+import 'authentification.dart';
 
 class WebViewPage extends StatefulWidget {
   const WebViewPage({super.key});
@@ -12,10 +12,9 @@ class WebViewPage extends StatefulWidget {
 class _WebViewPageState extends State<WebViewPage> {
   InAppWebViewController? _controller;
 
-  // Fonction pour déconnecter l'utilisateur et rediriger vers la page d'authentification
   Future<void> _logout() async {
     final cookieManager = CookieManager.instance();
-    await cookieManager.deleteAllCookies(); // Supprimer tous les cookies
+    await cookieManager.deleteAllCookies();
 
     if (mounted) {
       Navigator.pushReplacement(
@@ -25,7 +24,6 @@ class _WebViewPageState extends State<WebViewPage> {
     }
   }
 
-  // Fonction pour naviguer en arrière dans la WebView
   void _goBack() async {
     if (_controller != null) {
       bool canGoBack = await _controller!.canGoBack();
@@ -37,19 +35,22 @@ class _WebViewPageState extends State<WebViewPage> {
     }
   }
 
-  // Fonction pour recharger la page
   void _reloadPage() {
     _controller?.reload();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(""),
-        automaticallyImplyLeading: false, // Supprime la flèche de retour par défaut
+        automaticallyImplyLeading: false,
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        elevation: 0,
       ),
-      // Encapsulation dans SafeArea pour éviter l'overflow sur certains écrans
       body: SafeArea(
         child: Column(
           children: [
@@ -64,42 +65,109 @@ class _WebViewPageState extends State<WebViewPage> {
                     useOnLoadResource: true,
                     mediaPlaybackRequiresUserGesture: false,
                   ),
-                  android: AndroidInAppWebViewOptions(useHybridComposition: true),
+                  android: AndroidInAppWebViewOptions(
+                    useHybridComposition: true,
+                  ),
                 ),
                 onWebViewCreated: (controller) {
                   _controller = controller;
                 },
                 onLoadError: (controller, url, code, message) {
-                  print("Erreur de chargement : $message");
+                  debugPrint("Erreur de chargement : $message");
+
+                  // Injecter un message d'alerte avec animation CSS
+                  _controller?.evaluateJavascript(source: """
+                    // Ajouter une animation CSS à l'alerte
+                    let alertMessage = document.createElement('div');
+                    alertMessage.innerText = 'Aucune connexion Internet détectée. Veuillez vérifier votre connexion et réessayer.';
+                    alertMessage.style.position = 'fixed';
+                    alertMessage.style.top = '50%';
+                    alertMessage.style.left = '50%';
+                    alertMessage.style.transform = 'translate(-50%, -50%)';
+                    alertMessage.style.padding = '20px';
+                    alertMessage.style.backgroundColor = '#f44336';
+                    alertMessage.style.color = 'white';
+                    alertMessage.style.fontSize = '16px';
+                    alertMessage.style.fontWeight = 'bold';
+                    alertMessage.style.borderRadius = '8px';
+                    alertMessage.style.boxShadow = '0px 4px 10px rgba(0,0,0,0.2)';
+                    alertMessage.style.opacity = '0';
+                    alertMessage.style.transition = 'opacity 1s ease-in-out';
+                    document.body.appendChild(alertMessage);
+
+                    // Animation de l'alerte
+                    setTimeout(function() {
+                      alertMessage.style.opacity = '1';
+                    }, 100);
+
+                    // Supprimer l'alerte après 5 secondes
+                    setTimeout(function() {
+                      alertMessage.style.opacity = '0';
+                      setTimeout(function() {
+                        alertMessage.remove();
+                      }, 1000);
+                    }, 5000);
+                  """);
                 },
                 onLoadHttpError: (controller, url, statusCode, description) {
-                  print("Erreur HTTP : $description");
+                  debugPrint("Erreur HTTP : $description");
+
+                  // Injecter un message d'alerte avec animation CSS
+                  _controller?.evaluateJavascript(source: """
+                    let alertMessage = document.createElement('div');
+                    alertMessage.innerText = 'Erreur de connexion. Veuillez vérifier votre connexion Internet.';
+                    alertMessage.style.position = 'fixed';
+                    alertMessage.style.top = '50%';
+                    alertMessage.style.left = '50%';
+                    alertMessage.style.transform = 'translate(-50%, -50%)';
+                    alertMessage.style.padding = '20px';
+                    alertMessage.style.backgroundColor = '#f44336';
+                    alertMessage.style.color = 'white';
+                    alertMessage.style.fontSize = '16px';
+                    alertMessage.style.fontWeight = 'bold';
+                    alertMessage.style.borderRadius = '8px';
+                    alertMessage.style.boxShadow = '0px 4px 10px rgba(0,0,0,0.2)';
+                    alertMessage.style.opacity = '0';
+                    alertMessage.style.transition = 'opacity 1s ease-in-out';
+                    document.body.appendChild(alertMessage);
+
+                    setTimeout(function() {
+                      alertMessage.style.opacity = '1';
+                    }, 100);
+
+                    setTimeout(function() {
+                      alertMessage.style.opacity = '0';
+                      setTimeout(function() {
+                        alertMessage.remove();
+                      }, 1000);
+                    }, 5000);
+                  """);
                 },
               ),
             ),
             const SizedBox(height: 10),
             Container(
-              color: const Color.fromARGB(255, 211, 196, 196),
+              color: theme.colorScheme.surfaceVariant,
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  const SizedBox(width: 11),
                   ElevatedButton.icon(
                     onPressed: _logout,
                     icon: const Icon(Icons.logout),
                     label: const Text("Déconnexion"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: theme.colorScheme.error,
+                      foregroundColor: theme.colorScheme.onError,
                     ),
                   ),
-                  const SizedBox(width: 11),
                   ElevatedButton.icon(
                     onPressed: _reloadPage,
                     icon: const Icon(Icons.refresh),
                     label: const Text("Recharger"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueGrey,
+                      backgroundColor: theme.colorScheme.primaryContainer,
+                      foregroundColor: theme.colorScheme.onPrimaryContainer,
                     ),
                   ),
                 ],

@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:webview_app/splash_screen.dart';
 import 'package:webview_app/webview_page.dart';
 import 'package:webview_app/authentification.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-
+import 'package:webview_app/theme_notifier.dart'; // <- à importer
+// ignore: duplicate_import
+import 'splash_screen.dart'; // Assurez-vous d'importer SplashScreen ici
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeNotifier(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -14,31 +22,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+
     return MaterialApp(
       title: 'Application WebView',
-      theme: ThemeData(
-        primarySwatch: Colors.purple, // Remplacement du bleu par une autre couleur
-      ),
-      home: FutureBuilder(
-        future: _checkIfAuthenticated(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.data == true) {
-            return WebViewPage(); // L'utilisateur est déjà authentifié
-          } else {
-            return const Authentification(); // Demander à l'utilisateur de se connecter
-          }
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: themeNotifier.themeMode, // <- dynamique via Provider
+      home: SplashScreen(
+        onToggleTheme: (bool value) {
+          themeNotifier.toggleTheme();
         },
+        isDarkMode: themeNotifier.themeMode == ThemeMode.dark,
       ),
     );
-  }
-
-  // Vérifier si l'utilisateur est authentifié
-  Future<bool> _checkIfAuthenticated() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool? isAuthenticated = prefs.getBool("isAuthenticated");
-    return isAuthenticated ?? false; // Retourner false si l'utilisateur n'est pas authentifié
   }
 }

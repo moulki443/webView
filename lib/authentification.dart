@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_app/otp_input.dart';
 import 'dart:math';
-import 'webview_page.dart'; // Importer la page WebView
+import 'webview_page.dart';
+import 'package:provider/provider.dart';
+import 'package:webview_app/theme_notifier.dart'; // Importé pour changer le thème
 
 class Authentification extends StatefulWidget {
   const Authentification({super.key});
@@ -14,7 +16,7 @@ class Authentification extends StatefulWidget {
 class _AuthentificationState extends State<Authentification> {
   final _domainController = TextEditingController();
   bool _rememberMe = false;
-  bool _isButtonPressed = false; // Gérer l'animation du bouton
+  bool _isButtonPressed = false;
   String predefinedDomain = "exemple.com";
 
   @override
@@ -23,13 +25,11 @@ class _AuthentificationState extends State<Authentification> {
     super.dispose();
   }
 
-  // Sauvegarder l'état d'authentification
   Future<void> _saveAuthentication() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool("isAuthenticated", true);
   }
 
-  // Sauvegarder le domaine si "Se souvenir de moi" est coché
   Future<void> _saveDomain() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (_rememberMe) {
@@ -41,11 +41,10 @@ class _AuthentificationState extends State<Authentification> {
     }
   }
 
-  // Gérer la connexion et la redirection vers OTP
   void _startOtpProcess() async {
     if (_domainController.text == predefinedDomain) {
-      await _saveDomain(); // Sauvegarde des données
-      await _saveAuthentication(); // Sauvegarder l'état d'authentification
+      await _saveDomain();
+      await _saveAuthentication();
 
       String generatedOtp = _generateOtp();
       Navigator.pushReplacement(
@@ -56,15 +55,14 @@ class _AuthentificationState extends State<Authentification> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Domaine incorrect. Veuillez entrer un domaine valide."),
-          backgroundColor: Colors.redAccent,
+        SnackBar(
+          content: const Text("Domaine incorrect. Veuillez entrer un domaine valide."),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
     }
   }
 
-  // Générer un OTP aléatoire
   String _generateOtp() {
     final random = Random();
     return List.generate(4, (index) => random.nextInt(10)).join();
@@ -72,8 +70,11 @@ class _AuthentificationState extends State<Authentification> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 212, 212, 205),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
@@ -81,48 +82,44 @@ class _AuthentificationState extends State<Authentification> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo
                 Image.asset("assets/logo_managtech.png", height: 200),
                 const SizedBox(height: 20),
-                // Texte "Connexion"
-                const Text(
+                Text(
                   "Connexion",
-                  style: TextStyle(
-                    fontSize: 28,
+                  style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 20, 82, 156),
+                    color: theme.colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   "Entrez votre domaine pour continuer",
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 16),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.hintColor,
+                  ),
                 ),
                 const SizedBox(height: 30),
-                // Champ de saisie du domaine
                 TextField(
                   controller: _domainController,
                   decoration: InputDecoration(
                     labelText: "Votre domaine",
+                    prefixIcon: Icon(Icons.domain, color: theme.colorScheme.primary),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 20, 82, 156), width: 2),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                          color: Color.fromARGB(255, 20, 82, 156), width: 2),
+                      borderSide: BorderSide(
+                        color: theme.colorScheme.primary,
+                        width: 2,
+                      ),
                     ),
-                    prefixIcon: const Icon(Icons.domain,
-                        color: Color.fromARGB(255, 20, 82, 156)),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: isDark ? Colors.grey[900] : Colors.white,
                   ),
                 ),
                 const SizedBox(height: 10),
-                // Option "Se souvenir de moi"
                 Row(
                   children: [
                     Checkbox(
@@ -132,13 +129,12 @@ class _AuthentificationState extends State<Authentification> {
                           _rememberMe = value ?? false;
                         });
                       },
-                      activeColor: const Color.fromARGB(255, 20, 82, 156),
+                      activeColor: theme.colorScheme.primary,
                     ),
-                    const Text("Se souvenir de moi"),
+                    Text("Se souvenir de moi", style: theme.textTheme.bodyMedium),
                   ],
                 ),
                 const SizedBox(height: 20),
-                // Bouton de connexion
                 GestureDetector(
                   onTapDown: (_) {
                     setState(() {
@@ -161,23 +157,34 @@ class _AuthentificationState extends State<Authentification> {
                     width: double.infinity,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: _isButtonPressed
-                          ? const Color.fromARGB(255, 20, 82, 156)
-                          : const Color.fromARGB(255, 20, 82, 156),
+                      color: theme.colorScheme.primary,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: TextButton(
-                      onPressed: _startOtpProcess,
-                      child: const Text(
+                    child: Center(
+                      child: Text(
                         "Se connecter",
-                        style: TextStyle(
-                          fontSize: 18,
+                        style: theme.textTheme.labelLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
+                ),
+                const SizedBox(height: 20),
+
+                // Bouton pour changer le thème
+                Consumer<ThemeNotifier>( // Observer le changement de thème
+                  builder: (context, themeNotifier, child) {
+                    final isDarkMode = themeNotifier.themeMode == ThemeMode.dark;
+                    return TextButton.icon(
+                      onPressed: () {
+                        themeNotifier.toggleTheme(); // Changer de thème
+                      },
+                      icon: Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
+                      label: Text(isDarkMode ? "" : ""),
+                    );
+                  },
                 ),
               ],
             ),

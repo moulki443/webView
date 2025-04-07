@@ -12,8 +12,12 @@ class TransitionPage extends StatelessWidget {
       );
     });
 
+    // Détection du thème actuel
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 232, 236, 197),
+      backgroundColor: isDark ? Colors.grey[850] : const Color.fromARGB(255, 232, 236, 197),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -21,7 +25,7 @@ class TransitionPage extends StatelessWidget {
             Icon(
               Icons.check_circle_outline,
               size: 100,
-              color: Colors.white,
+              color: isDark ? Colors.white : const Color.fromARGB(255, 86, 206, 56),
             ),
             SizedBox(height: 20),
             Text(
@@ -29,12 +33,12 @@ class TransitionPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: const Color.fromARGB(255, 86, 206, 56),
+                color: isDark ? Colors.white : const Color.fromARGB(255, 86, 206, 56),
               ),
             ),
             SizedBox(height: 20),
             CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              valueColor: AlwaysStoppedAnimation<Color>(isDark ? Colors.white : Colors.green),
             ),
           ],
         ),

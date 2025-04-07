@@ -50,11 +50,14 @@ class _OtpInputState extends State<OtpInput> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark; // Vérifie si le mode sombre est activé
+
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 212, 212, 205),
+      backgroundColor: isDark ? Colors.black : const Color.fromARGB(255, 212, 212, 205),
       appBar: AppBar(
         title: const Text("Vérification OTP"),
-        backgroundColor: const Color.fromARGB(255, 25, 10, 110),
+        backgroundColor: isDark ? Colors.deepPurple[900] : const Color.fromARGB(255, 25, 10, 110),
       ),
       body: Center(
         child: Padding(
@@ -69,7 +72,11 @@ class _OtpInputState extends State<OtpInput> {
               const SizedBox(height: 20),
               Text(
                 "Votre code est : ${widget.otp}",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 22, 20, 119)),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : const Color.fromARGB(255, 22, 20, 119),
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
@@ -91,14 +98,20 @@ class _OtpInputState extends State<OtpInput> {
                           counterText: "",
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color.fromARGB(255, 22, 20, 119), width: 2),
+                            borderSide: BorderSide(
+                              color: isDark ? Colors.white : const Color.fromARGB(255, 22, 20, 119),
+                              width: 2,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Color.fromARGB(255, 22, 20, 119), width: 2),
+                            borderSide: BorderSide(
+                              color: isDark ? Colors.white : const Color.fromARGB(255, 22, 20, 119),
+                              width: 2,
+                            ),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: isDark ? Colors.grey[800] : Colors.white,
                         ),
                         onChanged: (value) {
                           if (value.isNotEmpty && index < 3) {
@@ -117,7 +130,8 @@ class _OtpInputState extends State<OtpInput> {
               ElevatedButton(
                 onPressed: _validateOtp,
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, backgroundColor: const Color.fromARGB(255, 22, 20, 119),
+                  foregroundColor: Colors.white,
+                  backgroundColor: isDark ? Colors.deepPurple[900] : const Color.fromARGB(255, 22, 20, 119),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
