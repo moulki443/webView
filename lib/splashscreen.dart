@@ -42,16 +42,17 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   Future<void> _navigate() async {
     await Future.delayed(const Duration(seconds: 3)); // Attente de 3 secondes avant de naviguer
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    // ignore: unused_local_variable
     bool isAuthenticated = prefs.getBool("isAuthenticated") ?? false;
 
     if (mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (context) =>
-              isAuthenticated ? const WebViewPage() : const Authentification(),
-        ),
-      );
+     
+      MaterialPageRoute(
+      builder: (context) => WebViewPage(showSuccessMessage: true),
+  ),
+);
     }
   }
 

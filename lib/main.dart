@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:webview_app/splash_screen.dart';
 import 'package:webview_app/webview_page.dart';
 import 'package:webview_app/authentification.dart';
 import 'package:webview_app/theme_notifier.dart'; // <- à importer
-// ignore: duplicate_import
-import 'splash_screen.dart'; // Assurez-vous d'importer SplashScreen ici
+import 'splashscreen.dart'; // Assurez-vous d'importer SplashScreen ici
 
 void main() {
   runApp(

@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_app/otp_input.dart';
 import 'dart:math';
-import 'webview_page.dart';
 import 'package:provider/provider.dart';
-import 'package:webview_app/theme_notifier.dart'; // Importé pour changer le thème
+import 'package:webview_app/theme_notifier.dart';
 
 class Authentification extends StatefulWidget {
   const Authentification({super.key});
@@ -16,8 +15,11 @@ class Authentification extends StatefulWidget {
 class _AuthentificationState extends State<Authentification> {
   final _domainController = TextEditingController();
   bool _rememberMe = false;
+  // ignore: unused_field
   bool _isButtonPressed = false;
-  String predefinedDomain = "exemple.com";
+  
+  // Liste des domaines valides
+  List<String> validDomains = ["exemple.com", "monsite.com", "domaine.fr", "test.com"];
 
   @override
   void dispose() {
@@ -42,7 +44,8 @@ class _AuthentificationState extends State<Authentification> {
   }
 
   void _startOtpProcess() async {
-    if (_domainController.text == predefinedDomain) {
+    // Vérifier si le domaine saisi est dans la liste des domaines valides
+    if (validDomains.contains(_domainController.text)) {
       await _saveDomain();
       await _saveAuthentication();
 
@@ -76,119 +79,129 @@ class _AuthentificationState extends State<Authentification> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset("assets/logo_managtech.png", height: 200),
-                const SizedBox(height: 20),
-                Text(
-                  "Connexion",
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "Entrez votre domaine pour continuer",
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.hintColor,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                TextField(
-                  controller: _domainController,
-                  decoration: InputDecoration(
-                    labelText: "Votre domaine",
-                    prefixIcon: Icon(Icons.domain, color: theme.colorScheme.primary),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color: theme.colorScheme.primary,
-                        width: 2,
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 50), // Espace pour bouton en haut
+                    Image.asset("assets/logo_managtech.png", height: 200),
+                    const SizedBox(height: 20),
+                    Text(
+                      "Connexion",
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: const Color.fromARGB(255, 38, 128, 235), // Nouvelle couleur
                       ),
                     ),
-                    filled: true,
-                    fillColor: isDark ? Colors.grey[900] : Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _rememberMe,
-                      onChanged: (bool? value) {
+                    const SizedBox(height: 10),
+                    Text(
+                      "Entrez votre domaine pour continuer",
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.hintColor,
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    TextField(
+                      controller: _domainController,
+                      decoration: InputDecoration(
+                        labelText: "Votre domaine",
+                        prefixIcon: Icon(Icons.domain, color: const Color.fromARGB(255, 38, 128, 235)), // Nouvelle couleur
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(
+                            color: const Color.fromARGB(255, 38, 128, 235), // Nouvelle couleur
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: isDark ? Colors.grey[900] : Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _rememberMe,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              _rememberMe = value ?? false;
+                            });
+                          },
+                          activeColor: const Color.fromARGB(255, 38, 128, 235), // Nouvelle couleur
+                        ),
+                        Text("Se souvenir de moi", style: theme.textTheme.bodyMedium),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    GestureDetector(
+                      onTapDown: (_) {
                         setState(() {
-                          _rememberMe = value ?? false;
+                          _isButtonPressed = true;
                         });
                       },
-                      activeColor: theme.colorScheme.primary,
-                    ),
-                    Text("Se souvenir de moi", style: theme.textTheme.bodyMedium),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                GestureDetector(
-                  onTapDown: (_) {
-                    setState(() {
-                      _isButtonPressed = true;
-                    });
-                  },
-                  onTapUp: (_) {
-                    setState(() {
-                      _isButtonPressed = false;
-                    });
-                    _startOtpProcess();
-                  },
-                  onTapCancel: () {
-                    setState(() {
-                      _isButtonPressed = false;
-                    });
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: double.infinity,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "Se connecter",
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      onTapUp: (_) {
+                        setState(() {
+                          _isButtonPressed = false;
+                        });
+                        _startOtpProcess();
+                      },
+                      onTapCancel: () {
+                        setState(() {
+                          _isButtonPressed = false;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: double.infinity,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 38, 128, 235), // Nouvelle couleur
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Se connecter",
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-
-                // Bouton pour changer le thème
-                Consumer<ThemeNotifier>( // Observer le changement de thème
-                  builder: (context, themeNotifier, child) {
-                    final isDarkMode = themeNotifier.themeMode == ThemeMode.dark;
-                    return TextButton.icon(
-                      onPressed: () {
-                        themeNotifier.toggleTheme(); // Changer de thème
-                      },
-                      icon: Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
-                      label: Text(isDarkMode ? "" : ""),
-                    );
-                  },
-                ),
-              ],
+              ),
             ),
-          ),
+
+            // Bouton de changement de thème en haut à droite
+            Positioned(
+              top: 10,
+              right: 10,
+              child: Consumer<ThemeNotifier>( 
+                builder: (context, themeNotifier, child) {
+                  final isDarkMode = themeNotifier.themeMode == ThemeMode.dark;
+                  return IconButton(
+                    icon: Icon(
+                      isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                      color: theme.iconTheme.color,
+                    ),
+                    onPressed: () {
+                      themeNotifier.toggleTheme();
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

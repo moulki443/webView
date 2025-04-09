@@ -8,7 +8,9 @@ class TransitionPage extends StatelessWidget {
     Future.delayed(Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => WebViewPage()), // Rediriger vers la WebViewPage
+        MaterialPageRoute(
+          builder: (context) => WebViewPage(showSuccessMessage: true),
+        ),
       );
     });
 

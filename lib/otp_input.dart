@@ -31,8 +31,11 @@ class _OtpInputState extends State<OtpInput> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => WebViewPage()),
-      );
+      MaterialPageRoute(
+        builder: (context) => WebViewPage(showSuccessMessage: true),
+  ),
+);
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
